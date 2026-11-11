@@ -71,3 +71,5 @@ app.MapGet("/api/health/database", async (PetVilleContext db, CloudConfigStore s
     ? Results.Ok(new { status = "Conectado", tipo = store.Mode })
     : Results.Problem("Banco indisponível. Abra /nuvem.html."));
 app.Run();
+
+public partial class Program { }
