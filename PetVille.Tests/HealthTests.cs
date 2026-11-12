@@ -28,15 +28,31 @@ public class HealthTests : IClassFixture<PetVilleFactory>
         _client = factory.CreateClient();
     }
 
+    // TESTE 1: Verifica se a API está funcionando
     [Fact]
     public async Task Health_DeveRetornarSucesso()
     {
         var response = await _client.GetAsync("/api/health");
 
-        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            System.Net.HttpStatusCode.OK,
+            response.StatusCode
+        );
 
         var conteudo = await response.Content.ReadAsStringAsync();
 
         Assert.Contains("PetVille API iniciada", conteudo);
+    }
+
+    // TESTE 2: Verifica se o perfil exige autenticação
+    [Fact]
+    public async Task MeuPerfil_SemToken_DeveRetornarUnauthorized()
+    {
+        var response = await _client.GetAsync("/api/clientes/me");
+
+        Assert.Equal(
+            System.Net.HttpStatusCode.Unauthorized,
+            response.StatusCode
+        );
     }
 }
