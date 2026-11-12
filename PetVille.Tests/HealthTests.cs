@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PetVille.API.Data;
@@ -25,6 +26,20 @@ public class PetVilleFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
 
+        // Configuração de conexão fictícia apenas para os testes.
+        // Não utiliza um banco MySQL real.
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            config.AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["ConnectionStrings:DefaultConnection"] =
+                        "Server=localhost;Database=petville_test;User=root;Password=test;"
+                }
+            );
+        });
+
+        // Substitui o banco MySQL pelo banco em memória.
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<PetVilleContext>>();
@@ -66,7 +81,6 @@ public class HealthTests : IClassFixture<PetVilleFactory>
         return dados.Email;
     }
 
-    // TESTE 1: API funcionando
     [Fact]
     public async Task Health_DeveRetornarSucesso()
     {
@@ -79,7 +93,6 @@ public class HealthTests : IClassFixture<PetVilleFactory>
         Assert.Contains("PetVille API iniciada", conteudo);
     }
 
-    // TESTE 2: Perfil sem token
     [Fact]
     public async Task MeuPerfil_SemToken_DeveRetornarUnauthorized()
     {
@@ -91,14 +104,12 @@ public class HealthTests : IClassFixture<PetVilleFactory>
         );
     }
 
-    // TESTE 3: Cadastro de cliente
     [Fact]
     public async Task Cadastro_DeveRetornarSucesso()
     {
         await CadastrarCliente();
     }
 
-    // TESTE 4: Login com senha incorreta
     [Fact]
     public async Task Login_SenhaIncorreta_DeveRetornarUnauthorized()
     {
@@ -119,7 +130,6 @@ public class HealthTests : IClassFixture<PetVilleFactory>
         );
     }
 
-    // TESTE 5: Login e acesso ao perfil com JWT
     [Fact]
     public async Task Login_ComToken_DevePermitirAcessoAoPerfil()
     {
