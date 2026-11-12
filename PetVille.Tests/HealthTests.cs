@@ -6,6 +6,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -26,8 +27,6 @@ public class PetVilleFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
 
-        // Configuração de conexão fictícia apenas para os testes.
-        // Não utiliza um banco MySQL real.
         builder.ConfigureAppConfiguration((context, config) =>
         {
             config.AddInMemoryCollection(
@@ -39,15 +38,21 @@ public class PetVilleFactory : WebApplicationFactory<Program>
             );
         });
 
-        // Substitui o banco MySQL pelo banco em memória.
         builder.ConfigureServices(services =>
         {
+            // Remove as configurações antigas do MySQL.
+            services.RemoveAll<
+                IDbContextOptionsConfiguration<PetVilleContext>
+            >();
+
             services.RemoveAll<DbContextOptions<PetVilleContext>>();
             services.RemoveAll<PetVilleContext>();
 
+            // Registra somente o banco em memória.
             services.AddDbContext<PetVilleContext>(options =>
-                options.UseInMemoryDatabase("PetVilleTestDb")
-            );
+            {
+                options.UseInMemoryDatabase("PetVilleTestDb");
+            });
         });
     }
 }
