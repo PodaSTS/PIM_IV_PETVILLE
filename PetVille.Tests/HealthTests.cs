@@ -1,6 +1,10 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using PetVille.API.Data;
 using Xunit;
 
 public class PetVilleFactory : WebApplicationFactory<Program>
@@ -16,6 +20,16 @@ public class PetVilleFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+
+        builder.ConfigureServices(services =>
+        {
+            services.RemoveAll<DbContextOptions<PetVilleContext>>();
+            services.RemoveAll<PetVilleContext>();
+
+            services.AddDbContext<PetVilleContext>(options =>
+                options.UseInMemoryDatabase("PetVilleTestDb")
+            );
+        });
     }
 }
 
